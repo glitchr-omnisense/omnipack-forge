@@ -1,0 +1,60 @@
+{#
+ # A version's documentation (ReleaseDocs): its pages beside, the page read, its headings, and
+ # the other versions that have theirs. The page's HTML comes from omnidocs/markdown when it is
+ # installed (page.renderer "omnidocs": its callouts and code frames), league/commonmark else,
+ # or the Markdown as it is. Variables: software, release, page, pages, versions.
+ #}
+{% extends '@Forge/client/layout.html.twig' %}
+
+{% block forge_title %}{{ page.title }}{% endblock %}
+{% block forge_lead %}{{ '@forge.docs.title'|trans({name: software.name, version: release.version}) }}{% endblock %}
+{% block forge_class %}forge-docs{% endblock %}
+{% block description %}{{ '@forge.docs.title'|trans({name: software.name, version: release.version}) }}{% endblock %}
+
+{% block forge_actions %}
+    <a class="forge-link" href="{{ path('forge_software', {slug: software.slug}) }}"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> {{ '@forge.docs.back'|trans({name: software.name}) }}</a>
+{% endblock %}
+
+{% block forge_body %}
+<div class="forge-columns">
+    <article class="forge-main forge-prose forge-docs-page" data-renderer="{{ page.renderer }}">
+        {{ page.html|raw }}
+    </article>
+
+    <aside class="forge-side">
+        {% if versions|length > 1 %}
+        <nav class="forge-docs-versions" aria-label="{{ '@forge.docs.versions'|trans }}">
+            <h2>{{ '@forge.docs.versions'|trans }}</h2>
+            <ul>
+            {% for other in versions %}
+                <li>{% if other == release %}<strong>{{ other.version }}</strong>{% else %}<a href="{{ path('forge_release_docs', {slug: software.slug, version: other.version, path: page.path}) }}">{{ other.version }}</a>{% endif %}</li>
+            {% endfor %}
+            </ul>
+        </nav>
+        {% endif %}
+
+        {% if pages|length > 1 %}
+        <nav class="forge-docs-pages" aria-label="{{ '@forge.docs.pages'|trans }}">
+            <h2>{{ '@forge.docs.pages'|trans }}</h2>
+            <ul>
+            {% for item in pages %}
+                <li>{% if item.path == page.path %}<strong>{{ item.title }}</strong>{% else %}<a href="{{ path('forge_release_docs', {slug: software.slug, version: release.version, path: item.path}) }}">{{ item.title }}</a>{% endif %}</li>
+            {% endfor %}
+            </ul>
+        </nav>
+        {% endif %}
+
+        {% set headings = page.headings|filter(h => h.level in [2, 3]) %}
+        {% if headings|length %}
+        <nav class="forge-docs-toc" aria-label="{{ '@forge.docs.on_page'|trans }}">
+            <h2>{{ '@forge.docs.on_page'|trans }}</h2>
+            <ul>
+            {% for heading in headings %}
+                <li class="is-level-{{ heading.level }}"><a href="#{{ heading.id }}">{{ heading.text }}</a></li>
+            {% endfor %}
+            </ul>
+        </nav>
+        {% endif %}
+    </aside>
+</div>
+{% endblock %}

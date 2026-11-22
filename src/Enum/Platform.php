@@ -5,8 +5,9 @@ namespace Base\Forge\Enum;
 /**
  * A platform a game or an application is built for. Its build is a release
  * artifact whose format is the platform's value: a zip of the build folder
- * (webgl, windows, macos, linux) or the package itself (android: an .apk or
- * an .aab).
+ * (webgl; windows, macos, linux too) or the package itself (an installer, a
+ * disk image: .exe, .msi, .dmg, .pkg, .AppImage, .deb, a tarball; android: an
+ * .apk or an .aab).
  */
 enum Platform: string
 {
@@ -38,13 +39,15 @@ enum Platform: string
         };
     }
 
-    /** @return list<string> the file extensions its build may come as */
+    /** @return list<string> the file extensions its build may come as (an installer, a disk image, a package, or the build folder zipped) */
     public function extensions(): array
     {
         return match ($this) {
             self::ANDROID => ['apk', 'aab'],
-            self::MACOS => ['zip', 'dmg'],
-            default => ['zip'],
+            self::MACOS => ['zip', 'dmg', 'pkg'],
+            self::WINDOWS => ['zip', 'exe', 'msi'],
+            self::LINUX => ['zip', 'gz', 'tgz', 'xz', 'appimage', 'deb'],
+            self::WEBGL => ['zip'],
         };
     }
 

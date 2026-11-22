@@ -13,9 +13,10 @@ use Base\Field\TextField;
 use Base\Forge\Entity\Release;
 
 /**
- * Releases: made from tags by forge:release:sync, or by hand; "Build" (re)makes
- * the zip (and a Unity package's tarball); "Builds" lists and uploads a game's
- * or an application's builds, one per platform.
+ * Releases: made from tags by forge:release:sync (git/git-bundle), by the publish API, or by
+ * hand; "Build" (re)makes the zip (and a Unity package's tarball) from the tag; "Builds" lists
+ * and uploads a game's or an application's builds, one per platform, and the version's
+ * documentation.
  */
 class ReleaseCrudController extends AbstractCrudController
 {
@@ -37,7 +38,23 @@ class ReleaseCrudController extends AbstractCrudController
         $builds = Action::new('forgeBuilds', 'Builds', 'fa-solid fa-gamepad')
             ->linkToRoute('forge_admin_release_builds', fn (Release $release) => ['id' => $release->getId()]);
 
-        return parent::configureActions($actions)->add(Action::INDEX, $build)->add(Action::DETAIL, $build)->add(Action::INDEX, $builds)->add(Action::DETAIL, $builds);
+        $actions = parent::configureActions($actions)->add(Action::INDEX, $builds)->add(Action::DETAIL, $builds);
+        // Building the archive from the tag is git/git-bundle's (ReleaseSync), its button
+        // ActionController's - a marketplace feature's controller (Base\Forge\Feature).
+        if ($this->featureOn('git') && $this->featureOn('marketplace')) {
+            $actions->add(Action::INDEX, $build)->add(Action::DETAIL, $build);
+        }
+
+        return $actions;
+    }
+
+    private function featureOn(string $feature): bool
+    {
+        try {
+            return \in_array($feature, (array) $this->getParameter('forge.enabled_features'), true);
+        } catch (\Throwable) {
+            return true;
+        }
     }
 
     public function configureFields(string $pageName): iterable

@@ -2,19 +2,41 @@
 
 namespace Base\Forge\Twig;
 
+use Base\Forge\Entity\Release;
 use Base\Forge\Entity\TimeEntry;
+use Base\Forge\Service\ReleaseDocs;
 use Base\Service\TradingInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Twig\Attribute\AsTwigFilter;
+use Twig\Attribute\AsTwigFunction;
 
 /**
  * {{ 210|forge_hours }} → 3h30; {{ 2500|forge_money('EUR') }} → 25,00 €;
  * {{ 2500|forge_price('EUR') }} → 25,00 € ≈ 27,30 $US for a visitor who reads
  * dollars (base-bundle's Trading rendered currency, with its rate).
+ * {% if forge_feature('marketplace') %}: whether a feature is on (Base\Forge\Feature);
+ * {% if forge_release_docs(release) %}: whether a release has its documentation.
  */
 final class ForgeExtension
 {
-    public function __construct(private readonly ?TradingInterface $trading = null)
+    /** @param list<string> $features */
+    public function __construct(
+        private readonly ?TradingInterface $trading = null,
+        private readonly ?ReleaseDocs $docs = null,
+        #[Autowire('%forge.enabled_features%')] private readonly array $features = [],
+    ) {
+    }
+
+    #[AsTwigFunction('forge_feature')]
+    public function feature(string $name): bool
     {
+        return \in_array($name, $this->features, true);
+    }
+
+    #[AsTwigFunction('forge_release_docs')]
+    public function releaseDocs(Release $release): bool
+    {
+        return (bool) $this->docs?->has($release);
     }
 
     #[AsTwigFilter('forge_hours')]

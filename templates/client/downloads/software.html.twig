@@ -12,6 +12,9 @@
 {% endblock %}
 
 {% block forge_body %}
+{# Without omnipack/marketplace every software is free: no licence, no offer, no price. #}
+{% set sells = forge_feature('marketplace') %}
+{% set paid = sells and not software.free %}
 {% if software.game %}{% include '@Forge/client/downloads/_game.html.twig' %}{% endif %}
 <div class="forge-columns">
     <div class="forge-main">
@@ -19,13 +22,14 @@
 
         <h2>{{ '@forge.software.releases'|trans }}</h2>
         <ol class="forge-releases">
-        {% for release in software.releases|filter(r => r.published) %}
-            {% set covered = software.free or is_granted('ROLE_STAFF') or licenses|filter(l => l.covers(release))|length > 0 %}
+        {% for release in software.publishedReleases %}
+            {% set covered = not paid or is_granted('ROLE_STAFF') or licenses|filter(l => l.covers(release))|length > 0 %}
             <li>
                 <header>
                     <strong>{{ release.version }}</strong>
                     {% if release.publishedAt %}<time datetime="{{ release.publishedAt|date('c') }}">{{ release.publishedAt|format_date('long') }}</time>{% endif %}
                     {% if release.commitSha %}<code>{{ release.commitSha|slice(0, 8) }}</code>{% endif %}
+                    {% if forge_release_docs(release) %}<a class="forge-link" href="{{ path('forge_release_docs', {slug: software.slug, version: release.version}) }}"><i class="fa-solid fa-book" aria-hidden="true"></i> {{ '@forge.docs.link'|trans }}</a>{% endif %}
                     {% if release.artifact('zip') %}
                         {% if covered %}
                             <a class="forge-link" href="{{ path('forge_download', {slug: software.slug, version: release.version}) }}"><i class="fa-solid fa-download"></i> zip</a>
@@ -71,7 +75,7 @@
             {% endif %}
         </nav>
         {% endif %}
-        {% if software.free %}
+        {% if not paid %}
             <p class="forge-badge is-free">{{ '@forge.pricing.free'|trans }}</p>
             <p>{{ '@forge.software.free_text'|trans }}</p>
         {% elseif licenses|length %}
@@ -102,12 +106,12 @@
             {% endfor %}
         {% endif %}
 
-        {% if software.packageName %}
+        {% if software.packageName and forge_feature('git') %}
         <h2>Composer</h2>
         <pre class="forge-code"><code>composer require {{ software.packageName }}</code></pre>
         {% endif %}
 
-        {% if software.upmName %}
+        {% if software.upmName and forge_feature('hub') and forge_feature('git') %}
         {% set registry = url('forge_upm_package', {name: software.upmName})|split('/' ~ software.upmName)|first %}
         {% set scope = software.upmName|split('.')|slice(0, 2)|join('.') %}
         <h2>{{ '@forge.unity.title'|trans }}</h2>
@@ -120,7 +124,7 @@
 "dependencies": {
   "{{ software.upmName }}": "{{ software.latestRelease ? software.latestRelease.version : '1.0.0' }}"
 }</code></pre>
-        {% if not software.free %}
+        {% if paid %}
         <p>{{ '@forge.unity.token'|trans }}</p>
         <pre class="forge-code"><code>[npmAuth."{{ registry }}"]
 token = "glk_…"

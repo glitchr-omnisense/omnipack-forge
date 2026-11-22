@@ -1,16 +1,16 @@
 {
     "name": "omnipack/forge",
     "type": "symfony-bundle",
-    "description": "Software forge for base-bundle: releases built from git tags, free and licensed downloads, a private Composer repository, a Unity registry (its documents written by omnisense/omnihub), client projects with a shared board, prepaid support hours and quotes - paid through base-bundle-market",
+    "description": "Software forge for omnisense/omnibase: software and its versions, builds per platform, downloads, each version's documentation and a publish API. Licences and paid downloads (omnipack/marketplace), releases from git tags and a Composer repository (git/git-bundle) and a Unity registry (omnisense/omnihub) switch on when their packages are installed",
     "keywords": [
         "symfony",
         "forge",
-        "licensing",
+        "versions",
         "downloads",
+        "releases",
+        "documentation",
+        "licensing",
         "composer",
-        "support",
-        "time-tracking",
-        "quotes",
         "git"
     ],
     "homepage": "https://github.com/glitchr-omnisense/omnipack-forge",
@@ -36,14 +36,9 @@
         "ext-zip": "*",
         "doctrine/doctrine-bundle": "^2.13|^3.0",
         "doctrine/orm": "^2.15|^3.0",
-        "git/git-bundle": "^1.0",
         "omnipack/admin": "^2.0",
-        "omnipack/marketplace": "^2.0",
         "omnibridge/symfony": "^3.0",
         "omnisense/omnibase": "^7.0",
-        "omnisense/omnihub": "^1.0",
-        "omnisense/omnistate": "^1.0",
-        "omnistate/annuaire-entreprises": "^1.0",
         "symfony/config": "^6.0|^7.0|^8.0",
         "symfony/dependency-injection": "^6.0|^7.0|^8.0",
         "symfony/doctrine-bridge": "^6.4|^7.0|^8.0",
@@ -53,9 +48,14 @@
         "symfony/security-bundle": "^6.0|^7.0|^8.0"
     },
     "require-dev": {
+        "git/git-bundle": "^1.0",
         "omnibridge/doctrine": "^3.0|^4.0",
         "omnibridge/eloquent": "^2.0",
+        "omnipack/marketplace": "^2.0",
+        "omnisense/omnihub": "^1.0",
+        "omnisense/omnistate": "^1.0",
         "omnisense/omnitrade": "^1.2",
+        "omnistate/annuaire-entreprises": "^1.0",
         "phpunit/phpunit": "^9.6|^10.5",
         "symfony/console": "^6.0|^7.0|^8.0",
         "symfony/framework-bundle": "^6.0|^7.0|^8.0",
@@ -68,16 +68,22 @@
         "omnisense/omnitrade": "<1.2"
     },
     "suggest": {
-        "ext-git2": "Required by git/git-bundle to read repositories (releases, the project dashboard's history)",
+        "omnipack/marketplace": "^2.0: licences sold, paid downloads, one-click purchases, support hours, quotes, invoices and client projects (Base\\Forge\\Feature::MARKETPLACE); without it every software is free and no checkout route exists",
         "omnisense/omnitrade": "^1.2 with a provider that saves payment methods: one-click purchases from Forge Store and Forge Hub (forge.hub.payment_gateway, docs/hub.md)",
         "omnitrade/stripe": "^1.2: Stripe as forge.hub.payment_gateway (a saved card read back when its buyer returns)",
         "omnitrade/paypal": "^1.2: PayPal as forge.hub.payment_gateway (an approved setup turned into a saved method when its buyer returns)",
+        "git/git-bundle": "^1.0: releases built from the repositories' tags, their archives, the Composer index, the repositories' docs/ and history (Base\\Forge\\Feature::GIT); without it the builds are attached",
+        "ext-git2": "Required by git/git-bundle to read repositories (releases, the project dashboard's history)",
+        "omnisense/omnihub": "^1.0, with git/git-bundle: the Unity registry (/upm) and the hub clients' manifest and catalogue (Base\\Forge\\Feature::HUB)",
+        "omnisense/omnistate": "^1.0 with a register provider (omnistate/annuaire-entreprises): the quote form's SIRET check, through omnipack/marketplace's company register",
+        "omnidocs/markdown": "^1.0: each version's documentation read with omnidocs (callouts, code frames, headings); league/commonmark alone renders it plainly, and without either it shows as Markdown",
+        "league/commonmark": "^2.6: each version's documentation rendered as HTML when omnidocs/markdown is not installed",
         "symfony/http-client": "Reads the pipelines' runs from GitHub Actions (Pipeline\\GithubActionsSource)",
         "symfony/yaml": "The stages of a GitHub Actions run, from its workflow file's needs"
     },
     "extra": {
         "branch-alias": {
-            "dev-main": "2.x-dev"
+            "dev-main": "3.x-dev"
         }
     },
     "scripts": {

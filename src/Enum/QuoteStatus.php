@@ -7,4 +7,6 @@ namespace Base\Forge\Enum;
  * QuoteStatus: requested, draft, sent, accepted, paid, declined), the same
  * for every trade. This name is kept for the code that uses it.
  */
-class_alias(\Base\Marketplace\Enum\QuoteStatus::class, __NAMESPACE__.'\QuoteStatus');
+if (enum_exists(\Base\Marketplace\Enum\QuoteStatus::class)) {
+    class_alias(\Base\Marketplace\Enum\QuoteStatus::class, __NAMESPACE__.'\QuoteStatus');
+}

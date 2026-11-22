@@ -17,9 +17,10 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 final class ForgeRepositoryProvider implements RepositoryProviderInterface
 {
     public function __construct(
-        private readonly ProjectRepository $projects,
         private readonly SoftwareRepository $software,
         #[Autowire('%forge.repositories_dir%')] private readonly string $directory,
+        /** The client projects': the marketplace feature's (Base\Forge\Feature). */
+        private readonly ?ProjectRepository $projects = null,
     ) {
     }
 
@@ -38,7 +39,7 @@ final class ForgeRepositoryProvider implements RepositoryProviderInterface
         foreach ($this->software->findWithRepository() as $software) {
             $add($software->getGitRepository(), $software->getRepositoryUrl(), $software->getName(), $software->getTagline());
         }
-        foreach ($this->projects->findWithRepository() as $project) {
+        foreach ($this->projects?->findWithRepository() ?? [] as $project) {
             $add($project->getGitRepository(), $project->getRepositoryUrl(), $project->getName(), $project->getSummary());
         }
 

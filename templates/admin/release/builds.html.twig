@@ -7,7 +7,7 @@
     <span class="admin-header-icon"><i class="fa-solid fa-gamepad"></i></span>
     <div class="admin-header-titles">
         <h1>Builds — {{ release }}</h1>
-        <div class="admin-header-subtitle">One build per platform. A new upload replaces the platform's previous build; a WebGL build is played in the game's page.</div>
+        <div class="admin-header-subtitle">One build per platform. A new upload replaces the platform's previous build; a WebGL build is played in the game's page. The version's documentation is below.</div>
     </div>
 </div>
 {% endblock %}
@@ -58,5 +58,37 @@
         </label>
         <div><button class="btn btn-primary" type="submit"><i class="fa-solid fa-upload"></i> Attach</button></div>
     </form>
+
+    {# The version's documentation (ReleaseDocs): a build's docs/ folder, the repository's at the tag, or written here. #}
+    <div class="card" style="padding: 1rem 1.25rem;">
+        <h2 style="font-size: 1.1rem;"><i class="fa-solid fa-book"></i> Documentation</h2>
+        {% if docs_pages|length %}
+        <p>
+            {% for page in docs_pages %}<a href="{{ path('forge_release_docs', {slug: release.software.slug, version: release.version, path: page.path}) }}" target="_blank">{{ page.title }}</a>{{ not loop.last ? ' · ' }}{% endfor %}
+        </p>
+        {% else %}
+        <p>No documentation yet: a build's docs/ folder, a zip or Markdown file uploaded below, or the home page written here.</p>
+        {% endif %}
+        <form method="post" style="display: grid; gap: .75rem;">
+            <input type="hidden" name="_token" value="{{ csrf_token('forge_release_builds_' ~ release.id) }}">
+            <label>Home page (Markdown)
+                <textarea class="form-control" name="docs_home" rows="10" style="font-family: monospace;">{{ docs_home }}</textarea>
+            </label>
+            <div><button class="btn btn-primary" type="submit" name="docs" value="save"><i class="fa-solid fa-floppy-disk"></i> Save</button></div>
+        </form>
+        <form method="post" enctype="multipart/form-data" class="forge-builds-upload" style="margin-top: .75rem;">
+            <input type="hidden" name="_token" value="{{ csrf_token('forge_release_builds_' ~ release.id) }}">
+            <label style="grid-column: span 2;">A docs folder (.zip) or a page (.md)
+                <input class="form-control" type="file" name="docs_file" accept=".zip,.md,.markdown" required>
+            </label>
+            <div><button class="btn btn-secondary" type="submit" name="docs" value="upload"><i class="fa-solid fa-upload"></i> Upload</button></div>
+        </form>
+        {% if docs_pages|length %}
+        <form method="post" data-confirm="Remove the whole documentation of {{ release }}?" style="margin-top: .75rem;">
+            <input type="hidden" name="_token" value="{{ csrf_token('forge_release_builds_' ~ release.id) }}">
+            <button class="btn btn-link text-danger" type="submit" name="docs" value="clear"><i class="fa-solid fa-trash"></i> Remove the documentation</button>
+        </form>
+        {% endif %}
+    </div>
 </div>
 {% endblock %}

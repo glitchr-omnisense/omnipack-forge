@@ -53,9 +53,12 @@ class SoftwareCrudController extends AbstractCrudController
             ->setFormType(EnumType::class)->setFormTypeOptions(['class' => SoftwareKind::class])
             ->formatValue(fn ($value) => $value instanceof SoftwareKind ? $value->value : $value)
             ->setHelp('A package (Composer, Unity), a game (played in its page, downloaded per platform) or an application');
-        yield TextField::new('pricing')->setColumns(3)
-            ->setFormType(EnumType::class)->setFormTypeOptions(['class' => Pricing::class])
-            ->formatValue(fn ($value) => $value instanceof Pricing ? $value->value : $value);
+        // Sold or free is the marketplace's (Base\Forge\Feature): without it every software is free.
+        if ($this->featureOn('marketplace')) {
+            yield TextField::new('pricing')->setColumns(3)
+                ->setFormType(EnumType::class)->setFormTypeOptions(['class' => Pricing::class])
+                ->formatValue(fn ($value) => $value instanceof Pricing ? $value->value : $value);
+        }
         yield TextField::new('year')->setRequired(false)->setColumns(3)->hideOnIndex();
         yield WysiwygField::new('content', 'Description')->hideOnIndex();
         yield TextField::new('stackAsText', 'Stack')->setRequired(false)->setColumns(6)->hideOnIndex()->setHelp('Comma separated: Symfony, TransparentJS, Stripe');
@@ -63,14 +66,28 @@ class SoftwareCrudController extends AbstractCrudController
         yield TextField::new('homepage')->setRequired(false)->setColumns(4)->hideOnIndex();
         yield TextField::new('sourceUrl')->setRequired(false)->setColumns(4)->hideOnIndex();
         yield TextField::new('demoUrl')->setRequired(false)->setColumns(4)->hideOnIndex()->setHelp('Opened in a nested panel from the applications page');
-        yield TextField::new('gitRepository', 'Git repository')->setRequired(false)->setColumns(4)->setHelp('The git-bundle repository name (releases are built from its tags)');
-        yield TextField::new('repositoryUrl')->setRequired(false)->setColumns(4)->hideOnIndex()->setHelp('Cloned into forge.repositories_dir when not in git.repositories');
-        yield TextField::new('packageName')->setRequired(false)->setColumns(4)->hideOnIndex()->setHelp('vendor/name, to serve it from the Composer repository');
-        yield TextField::new('upmName', 'UPM name')->setRequired(false)->setColumns(4)->hideOnIndex()->setHelp('com.glitchr.name, to serve it from the Unity registry (/upm): its package.json at each tag');
+        if ($this->featureOn('git')) {
+            yield TextField::new('gitRepository', 'Git repository')->setRequired(false)->setColumns(4)->setHelp('The git-bundle repository name (releases are built from its tags)');
+            yield TextField::new('repositoryUrl')->setRequired(false)->setColumns(4)->hideOnIndex()->setHelp('Cloned into forge.repositories_dir when not in git.repositories');
+            yield TextField::new('packageName')->setRequired(false)->setColumns(4)->hideOnIndex()->setHelp('vendor/name, to serve it from the Composer repository');
+        }
+        if ($this->featureOn('hub')) {
+            yield TextField::new('upmName', 'UPM name')->setRequired(false)->setColumns(4)->hideOnIndex()->setHelp('com.glitchr.name, to serve it from the Unity registry (/upm): its package.json at each tag');
+        }
         yield ImageField::new('screenshots')->setMultipleFiles()->setRequired(false)->setColumns(8)->hideOnIndex()->setHelp('A game\'s screenshots, in their order');
         yield BooleanField::new('playablePreview', 'Playable preview')->setRequired(false)->setColumns(4)->hideOnIndex()->setHelp('A paid game\'s WebGL build played in its page by anyone. A free game always plays in the browser');
         yield VideoField::new('trailer')->setRequired(false)->setColumns(4)->hideOnIndex()->setHelp('A game\'s trailer: a video');
         yield AssociationField::new('parent', 'Famille')->setClass(Software::class)->setColumns(3)->setRequired(false)->setHelp('Listed under it on the site (base-bundle-admin under base-bundle)');
         yield IntegerField::new('position')->setColumns(3);
+    }
+
+    /** Whether a feature is on (Base\Forge\Feature, forge.enabled_features). */
+    private function featureOn(string $feature): bool
+    {
+        try {
+            return \in_array($feature, (array) $this->getParameter('forge.enabled_features'), true);
+        } catch (\Throwable) {
+            return true;
+        }
     }
 }

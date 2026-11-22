@@ -5,11 +5,20 @@ order: 1
 
 # omnipack/forge
 
-omnipack/forge is a software forge for an omnibase site, sold through
-omnipack/marketplace: what a studio sells besides its time. Its namespace is
-`Base\Forge\`.
+omnipack/forge is a software forge for an omnibase site: software, its
+versions, their builds per platform, downloads and each version's
+documentation - the core, which presumes no provider. What a studio sells
+besides its time switches on with the packages it stands on
+([Installation](installation.md)): licences, purchases, hours, quotes and
+projects with omnipack/marketplace, releases from git tags with git/git-bundle,
+the Unity registry with omnisense/omnihub. Its namespace is `Base\Forge\`.
 
 ## What it adds
+
+- **Versions, builds and documentation.** A version's builds per platform,
+  published by an API, a command or the back office; its documentation, from a
+  build's `docs/` folder, the repository's or the back office; the versions as
+  JSON ([Games and applications](games.md)). The core, with no optional package.
 
 - **Software and releases.** Each git tag of a repository becomes a release;
   git/git-bundle reads the tree in-process and the release is zipped from it.

@@ -92,13 +92,19 @@ class Artifact implements \Stringable
     {
         return match (strtolower(pathinfo($this->path, PATHINFO_EXTENSION))) {
             'tgz', 'gz' => 'application/gzip',
+            'xz' => 'application/x-xz',
             'apk' => 'application/vnd.android.package-archive',
             'dmg' => 'application/x-apple-diskimage',
-            'aab' => 'application/octet-stream',
+            'exe' => 'application/vnd.microsoft.portable-executable',
+            'msi' => 'application/x-msi',
+            'deb' => 'application/vnd.debian.binary-package',
+            'aab', 'pkg', 'appimage' => 'application/octet-stream',
             default => 'application/zip',
         };
     }
     public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
+    /** When it was built or uploaded: now by default; an import keeps the original date. */
+    public function setCreatedAt(\DateTimeImmutable $createdAt): self { $this->createdAt = $createdAt; return $this; }
 
     public function isFree(): bool { return (bool) $this->getSoftware()?->isFree(); }
 }

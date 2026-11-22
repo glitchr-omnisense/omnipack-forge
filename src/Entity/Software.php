@@ -142,16 +142,23 @@ class Software extends Thread implements LinkableInterface
     #[ORM\OrderBy(['publishedAt' => 'DESC'])]
     protected Collection $releases;
 
-    /** @var Collection<int, LicenseOffer> */
-    #[ORM\OneToMany(targetEntity: LicenseOffer::class, mappedBy: 'software')]
-    protected Collection $offers;
+    /**
+     * Its licence offers: omnipack/marketplace's products, so not mapped here - the core stands
+     * without the marketplace. Filled when the software is loaded (EventListener\
+     * LicenseOffersListener, the marketplace feature on); empty otherwise.
+     *
+     * @var Collection<int, LicenseOffer>|null
+     */
+    protected ?Collection $offers = null;
+
+    /** @var (\Closure(): iterable<LicenseOffer>)|null */
+    private ?\Closure $offersLoader = null;
 
 
     public function __construct(?User $owner = null, ?string $title = null, ?string $slug = null)
     {
         parent::__construct($owner, null, $title, $slug);
         $this->releases = new ArrayCollection();
-        $this->offers = new ArrayCollection();
     }
 
     /**
@@ -316,15 +323,33 @@ class Software extends Thread implements LinkableInterface
         return $this;
     }
 
-    public function getLatestRelease(): ?Release
+    /**
+     * Its newest published release - the highest version number, whatever order they came out
+     * in (a 1.2.1 fix published after 1.3.0 does not hide it) -, or the newest one that has an
+     * artifact of that format (a platform's build: "windows", "webgl"; "zip").
+     */
+    public function getLatestRelease(?string $format = null): ?Release
     {
+        $latest = null;
         foreach ($this->releases as $release) {
-            if ($release->isPublished()) {
-                return $release;
+            if (!$release->isPublished() || (null !== $format && !$release->getArtifact($format))) {
+                continue;
+            }
+            if (null === $latest || version_compare(ltrim($release->getVersion(), 'vV'), ltrim($latest->getVersion(), 'vV'), '>')) {
+                $latest = $release;
             }
         }
 
-        return null;
+        return $latest;
+    }
+
+    /** @return list<Release> its published releases, highest version first */
+    public function getPublishedReleases(): array
+    {
+        $releases = array_values(array_filter($this->releases->toArray(), fn (Release $release) => $release->isPublished()));
+        usort($releases, fn (Release $a, Release $b) => version_compare(ltrim($b->getVersion(), 'vV'), ltrim($a->getVersion(), 'vV')));
+
+        return $releases;
     }
 
     public function findRelease(string $version): ?Release
@@ -338,6 +363,23 @@ class Software extends Thread implements LinkableInterface
         return null;
     }
 
-    /** @return Collection<int, LicenseOffer> */
-    public function getOffers(): Collection { return $this->offers; }
+    /** @return Collection<int, LicenseOffer> its licence offers; none without the marketplace */
+    public function getOffers(): Collection
+    {
+        if (null === $this->offers) {
+            $this->offers = new ArrayCollection($this->offersLoader ? [...($this->offersLoader)()] : []);
+            $this->offersLoader = null;
+        }
+
+        return $this->offers;
+    }
+
+    /** How its offers are read, on first use (LicenseOffersListener). @param \Closure(): iterable<LicenseOffer> $loader */
+    public function loadOffersWith(\Closure $loader): self
+    {
+        $this->offers = null;
+        $this->offersLoader = $loader;
+
+        return $this;
+    }
 }

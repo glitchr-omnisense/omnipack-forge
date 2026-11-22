@@ -1,6 +1,8 @@
 # omnipack/forge
 
-A software forge for [omnisense/omnibase](https://github.com/glitchr-omnisense/omnibase) applications, sold through [omnipack/marketplace](https://github.com/glitchr-omnisense/omnipack-marketplace). It covers what a studio sells besides its time on a site:
+A software forge for [omnisense/omnibase](https://github.com/glitchr-omnisense/omnibase) applications: software and its versions, the builds of each version per platform, downloads, each version's documentation and a publish API - the core, which presumes no provider. What a studio sells besides its time on a site switches on with the packages it stands on ([docs/installation.md](docs/installation.md)): licences and paid downloads with [omnipack/marketplace](https://github.com/glitchr-omnisense/omnipack-marketplace), releases from git tags with git/git-bundle, the Unity registry with omnisense/omnihub.
+
+- **Versions, builds and documentation (the core).** A version's builds per platform, published by the API (`POST /api/software/{slug}/releases/{version}`), `forge:artifact:attach` or the back office; its documentation from a build's `docs/` folder, the repository's or the back office, rendered by omnidocs when installed; the versions as JSON for a game that checks for updates - see [docs/games.md](docs/games.md).
 
 - **Software and releases.** Each git tag of a repository becomes a release. [git/git-bundle](https://github.com/glitchr-studio/git-bundle) reads the tree in-process and the release is zipped from it.
 - **Downloads.** Free software downloads for anyone. Licensed software downloads against a licence bought as a market product (`LicenseOffer`). Files are served through signed, short-lived URLs and nginx `X-Accel-Redirect`.
@@ -27,9 +29,15 @@ A software forge for [omnisense/omnibase](https://github.com/glitchr-omnisense/o
 ## Requirements
 
 - PHP 8.4 (`omnisense/omnibase` 7.0 asks it), `ext-zip`
-- `omnisense/omnibase` 7.0, `omnibridge/symfony` 3.0, `omnipack/admin` and `omnipack/marketplace` 2.x, `omnisense/omnihub` 1.x
-- `git/git-bundle` 1.0, with the **php-git2** extension ([RogerGee/php-git2](https://github.com/RogerGee/php-git2))
+- `omnisense/omnibase` 7.0, `omnibridge/symfony` 3.0, `omnipack/admin` 2.x, Doctrine, Symfony 6, 7 or 8
+
+Suggested, each switching its part on when installed (`Base\Forge\Feature`):
+
+- `omnipack/marketplace` 2.x: licences sold, paid downloads, support hours, quotes, invoices, client projects - without it every software is free and no checkout route exists; with `omnisense/omnitrade` and a provider, one-click purchases
+- `git/git-bundle` 1.0, with the **php-git2** extension ([RogerGee/php-git2](https://github.com/RogerGee/php-git2)): releases from git tags, the Composer repository, the repositories' docs and history
+- `omnisense/omnihub` 1.x (with git/git-bundle): the Unity registry and the hub
 - `omnisense/omnistate` with `omnistate/annuaire-entreprises`: they turn on omnipack/marketplace's company register, which checks the SIRETs typed in quote requests against the State's free register
+- `omnidocs/markdown` (else `league/commonmark`): each version's documentation rendered
 
 ## Installation
 
@@ -37,9 +45,9 @@ A software forge for [omnisense/omnibase](https://github.com/glitchr-omnisense/o
 composer require omnipack/forge
 ```
 
-Composer brings the core, its Symfony host, omnipack/admin, omnipack/marketplace, git/git-bundle, omnihub and omnistate
-with it. `config/bundles.php` registers the core's bundle first (see the core's README for the other bundles a site
-usually adds), then the ones the forge stands on:
+Composer brings the core, its Symfony host and omnipack/admin with it; require the suggested packages you want beside.
+`config/bundles.php` registers the core's bundle first (see the core's README for the other bundles a site usually
+adds), then the ones the forge stands on - the optional ones only when installed:
 
 ```php
 // config/bundles.php
@@ -58,11 +66,10 @@ immediate supply and the waived right of withdrawal) as [docs/hub.md](docs/hub.m
 describes, required by default (`forge.hub.consent_required`).
 
 ```yaml
-# config/routes.yaml
-forge_controller:
-    resource: "@ForgeBundle/src/Controller"
-    type: attribute
-    prefix: /
+# config/routes.yaml: the routes of the features that are on (Base\Forge\Routing\ForgeRouteLoader)
+forge:
+    resource: .
+    type: forge
 ```
 
 ```yaml

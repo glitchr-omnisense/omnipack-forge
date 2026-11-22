@@ -16,7 +16,7 @@ use Base\Mapping as ORM;
 #[DiscriminatorEntry(value: 'forge_license_offer')]
 class LicenseOffer extends Product
 {
-    #[ORM\ManyToOne(targetEntity: Software::class, inversedBy: 'offers')]
+    #[ORM\ManyToOne(targetEntity: Software::class)]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     protected ?Software $software = null;
 
@@ -52,7 +52,18 @@ class LicenseOffer extends Product
     }
 
     public function getSoftware(): ?Software { return $this->software; }
-    public function setSoftware(?Software $software): self { $this->software = $software; return $this; }
+    public function setSoftware(?Software $software): self
+    {
+        if ($this->software && $this->software !== $software) {
+            $this->software->getOffers()->removeElement($this);
+        }
+        $this->software = $software;
+        if ($software && !$software->getOffers()->contains($this)) {
+            $software->getOffers()->add($this);
+        }
+
+        return $this;
+    }
 
     public function getDurationMonths(): ?int { return $this->durationMonths; }
     public function setDurationMonths(?int $durationMonths): self { $this->durationMonths = $durationMonths ?: null; return $this; }

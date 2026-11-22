@@ -2,15 +2,17 @@
 
 namespace Base\Forge;
 
-use Base\Traits\SingletonTrait;
 use Base\Bundle\AbstractBaseBundle;
+use Base\Forge\DependencyInjection\FeatureMappingPass;
+use Base\Traits\SingletonTrait;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 /**
- * The studio's forge on top of base-bundle-market: software and its releases
- * (built from git tags through git/git-bundle), free and licensed downloads,
- * a private Composer repository, client projects with a shared board and
- * logged time, prepaid support hours and quotes.
+ * A software forge: software and its versions, their builds per platform, downloads, the
+ * documentation of each version, a publish API. The rest switches on with its package
+ * (Base\Forge\Feature): licences, purchases, support hours, quotes and client projects with
+ * omnipack/marketplace; releases from git tags and the Composer index with git/git-bundle; the
+ * Unity registry with omnisense/omnihub.
  */
 class ForgeBundle extends AbstractBaseBundle
 {
@@ -44,7 +46,28 @@ class ForgeBundle extends AbstractBaseBundle
         // application declares a real class there - which is how an app
         // extends a forge entity (its own Software fields, say) without
         // touching the bundle.
-        $this->setMapping($this->getPath().'/src/Entity', 'Base\Forge\Entity', 'App\Entity\Forge');
-        $this->setMapping($this->getPath().'/src/Repository', 'Base\Forge\Repository', 'App\Repository\Forge');
+        // Only the classes of the features whose package is installed: the others may not load.
+        $this->mapInstalled('Entity', 'App\Entity\Forge');
+        $this->mapInstalled('Repository', 'App\Repository\Forge');
+
+        // The entities of a feature that is off stay out of Doctrine's mapping.
+        $container->addCompilerPass(new FeatureMappingPass($this->getPath().'/src'));
+    }
+
+    /** setMapping() over src/<folder>, less the files of the features whose package is missing. */
+    private function mapInstalled(string $folder, string $outputNamespace): void
+    {
+        $off = Feature::offPaths(Feature::enabled());
+        $aliases = [];
+        foreach ($this->getAllClasses($this->getPath().'/src/'.$folder, 'Base\\Forge\\'.$folder) as $class) {
+            $class = trim($class, '\\');
+            $path = $folder.'/'.str_replace('\\', '/', $class).'.php';
+            if (array_filter($off, fn (string $prefix) => $path === $prefix || (str_ends_with($prefix, '/') && str_starts_with($path, $prefix)))) {
+                continue;
+            }
+            $aliases['Base\\Forge\\'.$folder.'\\'.$class] = $outputNamespace.'\\'.$class;
+        }
+
+        $this->setAlias($aliases);
     }
 }

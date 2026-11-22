@@ -6,14 +6,16 @@
 {% block background %}diagmonds-light{% endblock %}
 
 {% block forge_body %}
+{% set sells = forge_feature('marketplace') %}
 <div class="forge-grid">
 {% for item in software %}
     {% set latest = item.latestRelease %}
     {% set held = licenses[item.id] ?? [] %}
+    {% set paid = sells and not item.free %}
     <article class="forge-card">
         <header>
             <h2><a href="{{ path('forge_software', {slug: item.slug}) }}">{{ item.name }}</a></h2>
-            <span class="forge-badge {{ item.free ? 'is-free' : 'is-licensed' }}">{{ (item.free ? '@forge.pricing.free' : '@forge.pricing.licensed')|trans }}</span>
+            <span class="forge-badge {{ paid ? 'is-licensed' : 'is-free' }}">{{ (paid ? '@forge.pricing.licensed' : '@forge.pricing.free')|trans }}</span>
         </header>
         {% if item.tagline %}<p>{{ item.tagline }}</p>{% endif %}
         {% if latest %}
@@ -23,10 +25,12 @@
             {% if latest.artifact('zip') %}· {{ (latest.artifact('zip').size / 1024)|round(0, 'ceil') }} Ko{% endif %}
         </p>
         {% endif %}
-        {% if item.packageName %}<code class="forge-package">composer require {{ item.packageName }}</code>{% endif %}
+        {% if item.packageName and forge_feature('git') %}<code class="forge-package">composer require {{ item.packageName }}</code>{% endif %}
         <footer>
-            {% if latest and (item.free or held|length or is_granted('ROLE_STAFF')) %}
+            {% if latest and latest.artifact('zip') and (not paid or held|length or is_granted('ROLE_STAFF')) %}
                 {% include '@Forge/client/_cta.html.twig' with {href: path('forge_download', {slug: item.slug, version: latest.version}), label: '@forge.downloads.download'|trans} %}
+            {% elseif not paid %}
+                {% include '@Forge/client/_cta.html.twig' with {href: path('forge_software', {slug: item.slug}), label: '@forge.downloads.see'|trans} %}
             {% else %}
                 {% include '@Forge/client/_cta.html.twig' with {href: path('forge_software', {slug: item.slug}), label: '@forge.downloads.get_license'|trans} %}
             {% endif %}
@@ -37,9 +41,11 @@
 {% endfor %}
 </div>
 
+{% if forge_feature('git') %}
 <section class="forge-band" id="composer">
     <p>{{ '@forge.composer.lead'|trans }}</p>
     <pre class="forge-code"><code>composer config repositories.glitchr composer {{ app.request.schemeAndHttpHost }}/composer
 composer config http-basic.{{ app.request.host }} &lt;e-mail&gt; &lt;{{ '@forge.composer.key'|trans }}&gt;</code></pre>
 </section>
+{% endif %}
 {% endblock %}

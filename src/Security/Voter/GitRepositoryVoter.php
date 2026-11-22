@@ -7,6 +7,7 @@ use Base\Forge\Repository\LicenseRepository;
 use Base\Forge\Repository\ProjectRepository;
 use Base\Forge\Repository\SoftwareRepository;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Vote;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
@@ -25,10 +26,13 @@ final class GitRepositoryVoter extends Voter
     public const VIEW = 'GIT_VIEW';
 
     public function __construct(
-        private readonly ProjectRepository $projects,
         private readonly SoftwareRepository $software,
         private readonly LicenseRepository $licenses,
         private readonly Security $security,
+        /** The client projects': the marketplace feature's (Base\Forge\Feature). */
+        private readonly ?ProjectRepository $projects = null,
+        /** @var list<string> */
+        #[Autowire('%forge.enabled_features%')] private readonly array $features = ['marketplace'],
     ) {
     }
 
@@ -48,14 +52,14 @@ final class GitRepositoryVoter extends Voter
             return false;
         }
 
-        $project = $this->projects->findOneByRepository($subject);
+        $project = $this->projects?->findOneByRepository($subject);
         if ($project && $project->getClient()?->getId() === $user->getId()) {
             return true;
         }
 
         $software = $this->software->findOneBy(['gitRepository' => $subject]);
         if ($software && $software->isVisible()) {
-            return $software->isFree() || [] !== $this->licenses->findValidFor($user, $software);
+            return $software->isFree() || !\in_array('marketplace', $this->features, true) || [] !== $this->licenses->findValidFor($user, $software);
         }
 
         return false;

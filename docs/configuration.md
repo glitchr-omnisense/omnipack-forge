@@ -25,6 +25,24 @@ forge:
     # How long a signed download link stays valid, in seconds.
     download_ttl:         600
 
+    # The parts beyond the core (Base\Forge\Feature), each on when its package is installed. False turns one off although its package is there; true asks for it (the container does not compile without its package).
+    features:
+
+        # omnipack/marketplace: licences sold, paid downloads, purchases, support hours, quotes, invoices, client projects. Off: every software is free and no checkout route exists.
+        marketplace:          null
+
+        # git/git-bundle: releases from the repositories' tags and their archives, the Composer index, repositories read. Off: the builds are attached (publish API, forge:artifact:attach, the back office).
+        git:                  null
+
+        # omnisense/omnihub (with git/git-bundle): the Unity registry under /upm and the hub clients' manifest and catalogue.
+        hub:                  null
+
+    # The bearer token the publish API (POST /api/software/{slug}/releases/{version}) asks for: a CI or an editor sends it as "Authorization: Bearer <token>". Null or empty: the API is closed (503).
+    publish_token:        null
+
+    # The largest build the publish API and the back office take, in bytes.
+    max_build_size:       2147483648
+
     # The market store (slug) hour packs and accepted quotes are sold from.
     support_store:        support
 
@@ -80,15 +98,18 @@ forge:
 | `repositories_dir` | `var/storage/repositories` | the clones of the repositories not in `git.repositories` (`<name>.git`) |
 | `accel_prefix` | `/_protected/forge/` | the download controller's `X-Accel-Redirect`; empty, PHP streams the file |
 | `download_ttl` | 600 | how long a signed download link stays valid, in seconds |
-| `support_store` | `support` | the marketplace store hour packs and accepted quotes are sold from |
-| `software_store` | `logiciels` | the store licence offers are sold from |
-| `hourly_rate` | 6000 | a quote line's default rate, in cents |
-| `low_balance_minutes` | 120 | `forge:hours:low-balance`: the balance under which a client is reminded |
-| `contact_email` | null | where quote requests are mailed; null, the back office only |
-| `invoicing.vat_rate`, `invoicing.vat_exemption` | 20.0, null | the invoices of hours ([Invoices of hours](invoices.md)) |
+| `features.marketplace`, `features.git`, `features.hub` | null | null: on when the package is installed; false: off although it is (its services, routes and entities left out); true: required (the container does not compile without it). The ones on are `%forge.enabled_features%` |
+| `publish_token` | null | the publish API's bearer token ([Games and applications](games.md#the-publish-api)); null or empty, the API answers 503 |
+| `max_build_size` | 2 GiB | the largest build the publish API takes, in bytes (PHP's `upload_max_filesize` and `post_max_size` must allow it too) |
+| `support_store` | `support` | marketplace: the store hour packs and accepted quotes are sold from |
+| `software_store` | `logiciels` | marketplace: the store licence offers are sold from |
+| `hourly_rate` | 6000 | marketplace: a quote line's default rate, in cents |
+| `low_balance_minutes` | 120 | marketplace: `forge:hours:low-balance`, the balance under which a client is reminded |
+| `contact_email` | null | marketplace: where quote requests are mailed; null, the back office only |
+| `invoicing.vat_rate`, `invoicing.vat_exemption` | 20.0, null | marketplace: the invoices of hours ([Invoices of hours](invoices.md)) |
 | `hub.consent_required` | true | whether a one-click purchase without its buyer's statements is refused (`422 consent_required`) - [The statements](hub.md#the-statements-terms-of-sale-and-withdrawal) |
 | `hub.payment_gateway` | `stripe` | the omnitrade gateway one-click purchases from Forge Store and Forge Hub go through ([The hub](hub.md#buying-in-one-click)); null: none |
 | `hub.name`, `logo`, `color`, `scopes`, `checkout` | `Forge`, none, none, the Unity packages', true | the hub manifest ([The hub](hub.md)); `color` is `#rrggbb` or nothing - anything else stops the container from compiling (a configuration error at boot, not a broken hub.json) |
 
 Each key is a container parameter (`%forge.storage_dir%`,
-`%forge.hub.name%`...).
+`%forge.hub.name%`...). The keys of a feature that is off are read by nothing.

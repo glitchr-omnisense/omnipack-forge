@@ -6,6 +6,15 @@ downloads:
   get_license: "Obtenir une licence"
   empty: "Aucun logiciel à télécharger pour l'instant."
   license_required: "Une licence valide est nécessaire pour télécharger cette version."
+  see: "Voir"
+docs:
+  link: "Documentation"
+  title: "Documentation de {name} {version}"
+  pages: "Pages"
+  versions: "Versions"
+  version: "Version {version}"
+  back: "Retour à {name}"
+  on_page: "Sur cette page"
 pricing:
   free: "Libre"
   licensed: "Sous licence"

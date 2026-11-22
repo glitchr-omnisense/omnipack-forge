@@ -8,6 +8,7 @@ use Base\Forge\Entity\Artifact;
 use Base\Forge\Entity\Release;
 use Base\Forge\Enum\Platform;
 use Base\Forge\Service\ArtifactBuilder;
+use Base\Forge\Service\ReleaseDocs;
 use Base\Database\Repository\Repositories;
 use Base\Contract\UnitOfWork;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -33,6 +34,7 @@ class BuildController extends AbstractController
         private readonly ArtifactBuilder $builder,
         private readonly AdminContext $adminContext,
         private readonly MenuBuilder $menuBuilder,
+        private readonly ?ReleaseDocs $docs = null,
     ) {
     }
 
@@ -47,6 +49,11 @@ class BuildController extends AbstractController
             }
             $platform = Platform::tryFrom((string) $request->request->get('platform'));
             $file = $request->files->get('build');
+            if ($this->docs && $request->request->has('docs')) {
+                $this->documentation($request, $release);
+
+                return $this->redirectToRoute('forge_admin_release_builds', ['id' => $id]);
+            }
             if ($request->request->has('remove')) {
                 $this->remove($release, (string) $request->request->get('remove'));
 
@@ -78,7 +85,40 @@ class BuildController extends AbstractController
             'admin_context' => $this->adminContext,
             'release' => $release,
             'platforms' => Platform::cases(),
+            'docs_home' => $this->docs?->source($release),
+            'docs_pages' => $this->docs?->pages($release) ?? [],
         ]);
+    }
+
+    /** The documentation's home written here, a zip or a Markdown file of it uploaded, or all of it removed. */
+    private function documentation(Request $request, Release $release): void
+    {
+        if ('clear' === $request->request->get('docs')) {
+            $this->docs->clear($release);
+            $this->addFlash('success', sprintf('%s: documentation removed.', $release));
+
+            return;
+        }
+
+        $upload = $request->files->get('docs_file');
+        if ($upload instanceof UploadedFile) {
+            if (!$upload->isValid()) {
+                $this->addFlash('error', $upload->getErrorMessage());
+
+                return;
+            }
+            try {
+                $count = $this->docs->import($release, $upload->getPathname(), $upload->getClientOriginalName());
+                $this->addFlash('success', sprintf('%s: %d documentation file(s) taken.', $release, $count));
+            } catch (\InvalidArgumentException $e) {
+                $this->addFlash('error', $e->getMessage());
+            }
+
+            return;
+        }
+
+        $this->docs->write($release, (string) $request->request->get('docs_home', ''));
+        $this->addFlash('success', sprintf('%s: documentation saved.', $release));
     }
 
     private function remove(Release $release, string $format): void

@@ -1,5 +1,54 @@
 # Changelog
 
+## [3.0.0]
+
+omnipack/forge 3.0.0: a generic forge - software, its versions, their builds per platform, downloads and each
+version's documentation - that presumes no provider. What it sold, read or signed through other packages switches on
+only when those packages are installed (`Base\Forge\Feature`).
+
+### Changed (breaking)
+
+- Requires php, ext-zip, omnisense/omnibase, omnipack/admin, omnibridge/symfony, Doctrine and Symfony's config,
+  dependency-injection, doctrine-bridge, form, http-kernel, lock and security-bundle only. omnipack/marketplace,
+  git/git-bundle, omnisense/omnihub and omnisense/omnistate move to `suggest`, with omnitrade and its providers,
+  omnidocs/markdown, league/commonmark, symfony/http-client and symfony/yaml. An application that used them requires
+  them itself.
+- Features: `marketplace` (licences, paid downloads, purchases, hours, quotes, invoices, projects), `git` (releases
+  from tags, the Composer repository, repository reads) and `hub` (the Unity registry and hub, with git) are on when
+  their package is installed. `forge.features` turns one off (`false`), or asks it (`true`: the container fails when
+  its package is missing). A feature that is off leaves its services, entities, routes, admin menu and template parts
+  out. Without the marketplace every software is free and no checkout route exists (`ArtifactVoter`,
+  `GitRepositoryVoter`).
+- Routes are imported by the forge's loader: `forge: {resource: ., type: forge}` replaces the attribute import of
+  `@ForgeBundle/src/Controller`, which would load the controllers of the features that are off.
+- `Software::$offers` is no longer a mapped association: `getOffers()` reads the licence offers through the
+  marketplace's listener (`LicenseOffersListener`), and is empty without it. No schema change: the column stays on
+  `LicenseOffer`'s side.
+- `Software::getLatestRelease()` is the highest version published (version_compare, a leading `v` ignored), per
+  platform when one is given, no longer the last one published; `getPublishedReleases()` lists them highest first.
+- Constructors: `ArtifactBuilder(storageDir, ?ReleaseDocs, ?Git2Service, Filesystem)`, and `GitRepositoryVoter` and
+  `ForgeRepositoryProvider` take the project repository last and nullable.
+
+### Added
+
+- The publish API: `POST /api/software/{slug}/releases/{version}` (multipart `file`, `platform`, `changelog` or
+  `notes`, `published`, `docs`), opened by `forge.publish_token` as a Bearer token; 503 without one. `forge.max_build_size`
+  (2 GiB) bounds a build.
+- The versions as JSON: `GET /api/software` and `GET /api/software/{slug}` (latest and every published version, their
+  builds with url, filename, size, sha256).
+- Each version's documentation (`ReleaseDocs`): the `docs/` folder of a build's zip, of the repository at the tag
+  (git), or Markdown written and uploaded in the back office's builds page; shown at
+  `/telechargements/{slug}/{version}/docs/{path}`, rendered by omnidocs/markdown when installed, league/commonmark
+  else, or as it is.
+- `forge_download` accepts `latest` as the version (the newest one having that platform's build).
+- Twig functions `forge_feature(name)` and `forge_release_docs(release)`; template `client/downloads/docs.html.twig`;
+  translations `downloads.see` and `docs.*`.
+- Platforms accept more build formats: macOS zip/dmg/pkg, Windows zip/exe/msi, Linux zip/gz/tgz/xz/AppImage/deb,
+  Android apk/aab.
+- `Release::getChanges()`: the changelog's lines as a list.
+- Tests: `CoreKernelTest` boots the forge on its core alone, the optional packages hidden from the autoloader;
+  `FeatureTest`, `ReleaseDocsTest`.
+
 ## [2.0.0]
 
 omnibase/forge 2.0.0: the studio bundle of omnibase sites (software and releases, licences and seats, hour packs, time

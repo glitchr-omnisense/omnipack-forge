@@ -72,6 +72,25 @@ class Release implements \Stringable
     public function getChangelog(): ?string { return $this->changelog; }
     public function setChangelog(?string $changelog): self { $this->changelog = $changelog; return $this; }
 
+    /**
+     * The changelog as the list it usually is: one change per line, a leading "- ", "* " or
+     * "• " (a Markdown list, a CHANGELOG entry) taken off, blank lines and headings skipped.
+     *
+     * @return list<string>
+     */
+    public function getChanges(): array
+    {
+        $changes = [];
+        foreach (explode("\n", str_replace("\r\n", "\n", (string) $this->changelog)) as $line) {
+            $line = trim((string) preg_replace('/^\s*[-*•]\s+/u', '', $line));
+            if ('' !== $line && !str_starts_with($line, '#')) {
+                $changes[] = $line;
+            }
+        }
+
+        return $changes;
+    }
+
     public function getPublishedAt(): ?\DateTimeImmutable { return $this->publishedAt; }
     public function setPublishedAt(?\DateTimeImmutable $publishedAt): self { $this->publishedAt = $publishedAt; return $this; }
     public function isPublished(): bool { return null !== $this->publishedAt && $this->publishedAt <= new \DateTimeImmutable(); }

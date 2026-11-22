@@ -21,15 +21,23 @@ use Symfony\Component\Filesystem\Filesystem;
  * ustar archive, every file under package/, its package.json naming the
  * package and the release's version. A game's or an application's builds
  * are made elsewhere (Unity, a CI) and attached to the release per platform
- * (attach()).
+ * (attach()) - the core's way, which needs no git: a build's docs/ folder becomes the
+ * release's documentation (ReleaseDocs).
  */
 class ArtifactBuilder
 {
     public function __construct(
-        private readonly Git2Service $git,
         #[Autowire('%forge.storage_dir%')] private readonly string $storageDir,
+        private readonly ?ReleaseDocs $docs = null,
+        private readonly ?Git2Service $git = null,
         private readonly Filesystem $filesystem = new Filesystem(),
     ) {
+    }
+
+    /** git/git-bundle, which build() and buildUpm() read the tree at the tag with. */
+    private function git(): Git2Service
+    {
+        return $this->git ?? throw new \LogicException('Building an archive from a tag needs git/git-bundle: composer require git/git-bundle, or attach the builds.');
     }
 
     public function build(Release $release): Artifact
@@ -50,7 +58,7 @@ class ArtifactBuilder
         }
 
         $count = 0;
-        foreach ($this->git->walkTree($repository, $ref) as $path => $file) {
+        foreach ($this->git()->walkTree($repository, $ref) as $path => $file) {
             $name = $folder.'/'.$path;
             $zip->addFromString($name, $file['content']);
             // Keep the executable bit (100755) of scripts.
@@ -79,7 +87,7 @@ class ArtifactBuilder
 
         $files = [];
         $manifest = false;
-        foreach ($this->git->walkTree($repository, $ref) as $path => $file) {
+        foreach ($this->git()->walkTree($repository, $ref) as $path => $file) {
             $content = $file['content'];
             if ('package.json' === $path) {
                 $content = $this->upmManifest($content, $name, $release->getVersion());
@@ -114,7 +122,7 @@ class ArtifactBuilder
         if (!is_file($source)) {
             throw new \InvalidArgumentException(sprintf('No file at "%s".', $source));
         }
-        $filename = basename($filename ?? $source);
+        $filename = self::cleanFilename($filename ?? $source);
         $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
         if (!\in_array($extension, $platform->extensions(), true)) {
             throw new \InvalidArgumentException(sprintf('A %s build is a .%s file, not "%s".', $platform->label(), implode(' or .', $platform->extensions()), $filename));
@@ -131,8 +139,20 @@ class ArtifactBuilder
         $this->filesystem->copy($source, $target, true);
 
         $this->forget($release, $platform->value);
+        if ('zip' === $extension) {
+            $this->docs?->extract($release, $target);
+        }
 
         return new Artifact($release, $relative, $platform->value, (int) filesize($target), (string) hash_file('sha256', $target));
+    }
+
+    /** A name a build is saved and downloaded under: its own, with nothing a path or a header could trip on. */
+    public static function cleanFilename(string $filename): string
+    {
+        $filename = basename(str_replace('\\', '/', trim($filename)));
+        $filename = trim(preg_replace('/[^\p{L}\p{N}._ ()+-]+/u', '-', $filename) ?? '', '.- ');
+
+        return '' === $filename ? 'download' : mb_substr($filename, 0, 200);
     }
 
     /** A zip with an index.html and a Build/ folder at its root, or under one folder. */
