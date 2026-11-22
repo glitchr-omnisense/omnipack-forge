@@ -305,12 +305,12 @@ seat**; the seat's previous key stops working at once.
 
 ### The statements: terms of sale and withdrawal
 
-Since 1.1.0 (with omnibase/marketplace 1.1). A consumer may withdraw from a distance contract
+Since 1.1.0 (with omnipack/marketplace 1.1). A consumer may withdraw from a distance contract
 within 14 days; for digital content supplied at once - a licence - the right is lost only if
 they asked for immediate supply and acknowledged losing it before paying (Code de la
 consommation L221-28 13°). The clients therefore show the statements the forge gives, each with
 its own box, none ticked, and send back what their user ticked. The texts are not the clients':
-they are the host's (omnibase/marketplace's `@marketplace.consent.*` translations, which a host
+they are the host's (omnipack/marketplace's `@marketplace.consent.*` translations, which a host
 words in its own catalogue) and the forge serves them.
 
 What a purchase asks (`Base\Marketplace\Service\Consents`):
@@ -319,7 +319,7 @@ What a purchase asks (`Base\Marketplace\Service\Consents`):
 |---|---|---|
 | `terms` | the host names its terms (`marketplace.consent.terms_route`) | "I have read and accept the terms of sale." - with `url`, the terms' page, to link |
 | `immediate_supply` | the offer is digital content: every licence offer, unless the host marks it otherwise (`Product::setWithdrawal()`) | "I ask for the digital content to be supplied immediately, as soon as I pay, and I acknowledge that I thereby lose my right of withdrawal." |
-| `early_service` | a service (hour packs; not sold in one click today) | see omnibase/marketplace's docs/withdrawal.md |
+| `early_service` | a service (hour packs; not sold in one click today) | see omnipack/marketplace's docs/withdrawal.md |
 
 With `marketplace.consent.businesses: skip`, a buyer with a confirmed VAT number is not asked
 `immediate_supply` nor `early_service`; `terms` still is.
@@ -342,7 +342,7 @@ With `marketplace.consent.businesses: skip`, a buyer with a confirmed VAT number
 - `locale` (optional query): the language the texts are worded in, `[a-z]{2,3}` with an optional
   region (`fr`, `en_GB`). Without it, the host's own language (`kernel.default_locale`): the
   clients send no `Accept-Language` and no session, so nothing else says one - never a fixed
-  English (since 1.2.1, with omnibase/marketplace 1.1.1). A language the host has no text for falls
+  English (since 1.2.1, with omnipack/marketplace 1.1.1). A language the host has no text for falls
   back as its catalogues do; `consent.locale` is the language the texts are in (`en_GB` asked:
   `en`), which the purchase sends back.
 - `statements`: in the order to show them; `text` is shown as is (plain text, no markup), one box

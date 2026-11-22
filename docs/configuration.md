@@ -40,7 +40,7 @@ forge:
     # Where quote requests are mailed. Null: they are only listed in the back office.
     contact_email:        null
 
-    # The invoices of hours (Service\HourInvoices): omnibase/marketplace's Invoice, numbered, worded and sent by its marketplace.invoice settings.
+    # The invoices of hours (Service\HourInvoices): omnipack/marketplace's Invoice, numbered, worded and sent by its marketplace.invoice settings.
     invoicing:
 
         # The VAT rate a new draft starts with, in percent (France's normal rate, CGI art. 278).
@@ -70,7 +70,7 @@ forge:
         # The omnitrade gateway (omnitrade.gateways.<name>) the clients' one-click purchases go through: payment methods saved on its page, charged off-session (docs/hub.md). The shop needs a payment method naming it (gatewayFactory). Null: no one-click purchase.
         payment_gateway:      stripe
 
-        # Whether a one-click purchase must carry its buyer's statements - the terms of sale accepted, immediate supply asked for and the right of withdrawal waived - in the version GET /upm/-/hub/quote gave (omnibase/marketplace's marketplace.consent; docs/hub.md). False: a client that sends none (Forge Store 1.7.0, Forge Hub 1.5.0) buys as in 1.0, nothing recorded - its consumer buyers keep their 14 days.
+        # Whether a one-click purchase must carry its buyer's statements - the terms of sale accepted, immediate supply asked for and the right of withdrawal waived - in the version GET /upm/-/hub/quote gave (omnipack/marketplace's marketplace.consent; docs/hub.md). False: a client that sends none (Forge Store 1.7.0, Forge Hub 1.5.0) buys as in 1.0, nothing recorded - its consumer buyers keep their 14 days.
         consent_required:     true
 ```
 

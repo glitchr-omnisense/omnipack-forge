@@ -73,7 +73,7 @@ order: 45
 
 | Listener | On |
 |---|---|
-| `OrderPaidSubscriber` | omnibase/marketplace's `OrderPaidEvent`: delivers hour packs, licences, quotes ([Installation](installation.md#how-a-purchase-is-delivered)) |
+| `OrderPaidSubscriber` | omnipack/marketplace's `OrderPaidEvent`: delivers hour packs, licences, quotes ([Installation](installation.md#how-a-purchase-is-delivered)) |
 | `TimeEntryLedgerSubscriber` | Doctrine's `onFlush`: logged time debits the hours ledger |
 | `LicenseSeatListener` | a seat saved from the back office: its holder is told once, as from the owner's account |
 | `LicenseApiErrorSubscriber` | the licence API's errors answered in JSON with their own status (422 for a request it cannot read), never the site's HTML error page |
@@ -97,4 +97,4 @@ order: 45
 
 Projects, cards, time entries, pipelines, project reviews, software,
 releases, downloads, licences, licence offers, seats, activations, hour packs,
-hour credits, hour refunds and quotes, each a CRUD of omnibase/admin.
+hour credits, hour refunds and quotes, each a CRUD of omnipack/admin.

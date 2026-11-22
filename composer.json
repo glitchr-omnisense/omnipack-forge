@@ -1,5 +1,5 @@
 {
-    "name": "omnibase/forge",
+    "name": "omnipack/forge",
     "type": "symfony-bundle",
     "description": "Software forge for base-bundle: releases built from git tags, free and licensed downloads, a private Composer repository, a Unity registry (its documents written by omnisense/omnihub), client projects with a shared board, prepaid support hours and quotes - paid through base-bundle-market",
     "keywords": [
@@ -13,7 +13,7 @@
         "quotes",
         "git"
     ],
-    "homepage": "https://github.com/glitchr-omnisense/omnibase-forge",
+    "homepage": "https://github.com/glitchr-omnisense/omnipack-forge",
     "license": "MIT",
     "authors": [
         {
@@ -37,8 +37,8 @@
         "doctrine/doctrine-bundle": "^2.13|^3.0",
         "doctrine/orm": "^2.15|^3.0",
         "git/git-bundle": "^1.0",
-        "omnibase/admin": "^2.0",
-        "omnibase/marketplace": "^2.0",
+        "omnipack/admin": "^2.0",
+        "omnipack/marketplace": "^2.0",
         "omnibridge/symfony": "^3.0",
         "omnisense/omnibase": "^7.0",
         "omnisense/omnihub": "^1.0",
@@ -60,6 +60,9 @@
         "symfony/console": "^6.0|^7.0|^8.0",
         "symfony/framework-bundle": "^6.0|^7.0|^8.0",
         "symfony/twig-bundle": "^6.0|^7.0|^8.0"
+    },
+    "replace": {
+        "omnibase/forge": "self.version"
     },
     "conflict": {
         "omnisense/omnitrade": "<1.2"

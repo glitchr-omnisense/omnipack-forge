@@ -9,7 +9,7 @@ order: 60
 
 ```bash
 vendor/bin/phpunit                                   # standalone
-vendor/bin/phpunit -c vendor/omnibase/forge          # from a host
+vendor/bin/phpunit -c vendor/omnipack/forge          # from a host
 ```
 
 In omnisense/omnibase-harness, mounting the checkout in place of the
@@ -17,7 +17,7 @@ installed package:
 
 ```bash
 docker run --rm --network none \
-    -v "$PWD":/srv/demo/vendor/omnibase/forge:ro \
+    -v "$PWD":/srv/demo/vendor/omnipack/forge:ro \
     omnisense/omnibase-harness:latest test forge
 ```
 

@@ -12,12 +12,12 @@ sends it (`/admin/forge/quote/{id}/send`); the client reads it at
 Paid, the hours are credited and the quote marked paid
 (`EventSubscriber\OrderPaidSubscriber`).
 
-## What is omnibase/marketplace's
+## What is omnipack/marketplace's
 
 Since the marketplace's business quotes, what every quote is lives there, and
 the forge keeps only its hours:
 
-| Here | From omnibase/marketplace |
+| Here | From omnipack/marketplace |
 |---|---|
 | `Entity\Quote` (table `forge_quote`, unchanged) | extends `Base\Marketplace\Entity\Quote\AbstractQuote`: client, company check, status, discount, validity, token, `isAcceptable()`, `accept()`, `markPaid()` |
 | `Entity\QuoteLine` (minutes at an hourly rate) | - |

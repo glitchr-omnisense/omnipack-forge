@@ -1,12 +1,12 @@
 ---
-title: omnibase/forge
+title: omnipack/forge
 order: 1
 ---
 
-# omnibase/forge
+# omnipack/forge
 
-omnibase/forge is a software forge for an omnibase site, sold through
-omnibase/marketplace: what a studio sells besides its time. Its namespace is
+omnipack/forge is a software forge for an omnibase site, sold through
+omnipack/marketplace: what a studio sells besides its time. Its namespace is
 `Base\Forge\`.
 
 ## What it adds
@@ -35,7 +35,7 @@ omnibase/marketplace: what a studio sells besides its time. Its namespace is
 - **Quotes.** Asked from the site, priced and sent from the back office,
   accepted and paid like any order, their hours credited ([Quotes](quotes.md)).
 - **Invoices of hours.** A project invoiced on the time spent: its hours
-  invoiced month by month as omnibase/marketplace's `Invoice`, each hour
+  invoiced month by month as omnipack/marketplace's `Invoice`, each hour
   knowing the line that billed it ([Invoices of hours](invoices.md)).
 
 ## Pages

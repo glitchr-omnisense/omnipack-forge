@@ -10,7 +10,7 @@ order: 10
 - PHP 8.4 (omnisense/omnibase 7.0 asks it), `ext-zip`;
 - doctrine/orm 2.15 or 3;
 - omnisense/omnibase 7.0 or later, omnibridge/symfony 3.0 or later,
-  omnibase/admin 2, omnibase/marketplace 2;
+  omnipack/admin 2, omnipack/marketplace 2;
 - git/git-bundle 1.x, with the php-git2 extension (`ext-git2`), to read the
   repositories (releases, the project's history);
 - omnisense/omnihub 1.0 or later: the Unity registry's documents, the hub
@@ -24,7 +24,7 @@ order: 10
 ## The bundle
 
 ```bash
-composer require omnibase/forge
+composer require omnipack/forge
 ```
 
 ```php
@@ -90,7 +90,7 @@ location /_protected/forge/ {
 
 ## How a purchase is delivered
 
-omnibase/marketplace's `Checkout::confirm()` dispatches `OrderPaidEvent`, and
+omnipack/marketplace's `Checkout::confirm()` dispatches `OrderPaidEvent`, and
 `Base\Forge\EventSubscriber\OrderPaidSubscriber` delivers the order:
 
 | Product | Delivered |

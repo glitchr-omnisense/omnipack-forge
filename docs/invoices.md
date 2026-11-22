@@ -7,12 +7,12 @@ order: 38
 
 A project invoiced on the time spent (`Project::$hourlyRate`, cents before VAT)
 is not taken off its client's support hours: its time is invoiced, month by
-month, to the Partner (the project's client), as an **omnibase/marketplace
+month, to the Partner (the project's client), as an **omnipack/marketplace
 `Invoice`** - the same entity, the same sequence without a gap, the same PDF and
 Factur-X, sent the same way as the shop's invoices. The forge keeps only what
 an order would otherwise say: which hours, at which rate.
 
-| Here | From omnibase/marketplace |
+| Here | From omnipack/marketplace |
 |---|---|
 | `Entity\HourInvoice` (table `forge_hour_invoice`): the draft, then the record of the issued invoice and its credit note | `Entity\Invoice` (order `NULL`), never edited once issued |
 | `TimeEntry::$hourInvoice`, `$invoiceLine`: the line that billed an hour | `Invoice::getLines()` (`id`, `quantity` in hours, `unit_price` the rate, `unit` HUR, `period` the month) |
@@ -88,15 +88,15 @@ marketplace:
 
 ## Requirements
 
-omnibase/marketplace with `Invoices::issueFor()` (a03428c), the credit note of an
+omnipack/marketplace with `Invoices::issueFor()` (a03428c), the credit note of an
 invoice without an order (92d9691) and the billing period on the lines
-(2042c64); omnibase/admin with a field's `setTemplatePath()` on the detail page
+(2042c64); omnipack/admin with a field's `setTemplatePath()` on the detail page
 (4e689b3). A site updates the three together; with an older marketplace, an
 invoice of hours is refused with a message saying so.
 
 ## Migration
 
-A site that has omnibase/forge adds, by a migration: the table
+A site that has omnipack/forge adds, by a migration: the table
 `forge_hour_invoice`, the columns `forge_time_entry.hourInvoice_id` (nullable,
 `ON DELETE SET NULL`) and `invoiceLine`, and the project's `hourlyRate`
 (nullable). Nothing changes in marketplace's tables.

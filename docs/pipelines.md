@@ -67,7 +67,7 @@ A CI's webhooks are not listened to yet: the command (cron) brings the runs up t
 
 ## The graph
 
-A run is drawn by [`@glitchr/graphjs`](https://github.com/glitchr-studio/graphjs), which omnibase/admin vendors and its layout loads on every page of the back office: a node per job - its stage under its name, in the colour of its status -, ranked by stage, an edge from each job it waits for (the ones `needs` names, or every job of the stage before). The template writes it in the page (`data-graph`, the `pipeline` preset), so the jobs still read, in order, without the script. Outside the back office the include loads the library itself, once per page (`assets: false` when the page already does).
+A run is drawn by [`@glitchr/graphjs`](https://github.com/glitchr-studio/graphjs), which omnipack/admin vendors and its layout loads on every page of the back office: a node per job - its stage under its name, in the colour of its status -, ranked by stage, an edge from each job it waits for (the ones `needs` names, or every job of the stage before). The template writes it in the page (`data-graph`, the `pipeline` preset), so the jobs still read, in order, without the script. Outside the back office the include loads the library itself, once per page (`assets: false` when the page already does).
 
 `Base\Forge\Service\PipelineGraph::data($pipeline)` returns the same graph as data - `{nodes: [{id, label, sub, rank, state, href, title}], edges: [{from, to}]}` - for `Graph.setData()`, when a page follows a run that is still moving:
 
